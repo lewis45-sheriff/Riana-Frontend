@@ -1,10 +1,11 @@
 "use client";
 
-import { ArrowLeft, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Mail, Phone, RefreshCw, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { buttonStyles } from "@/components/ui/button-styles";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
@@ -24,6 +25,11 @@ export default function ResponseDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Send-email composer state.
+  const [draft, setDraft] = useState("");
+  const [action, setAction] = useState<"draft" | "send" | null>(null);
+  const [sendResult, setSendResult] = useState<{ ok: boolean; text: string } | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -39,6 +45,32 @@ export default function ResponseDetailPage() {
       setLoading(false);
     }
   }, [id]);
+
+  const generate = async () => {
+    setAction("draft");
+    try {
+      const { draft } = await api.draftResponseEmail(id);
+      setDraft(draft);
+    } finally {
+      setAction(null);
+    }
+  };
+
+  const send = async () => {
+    setAction("send");
+    setSendResult(null);
+    try {
+      const r = await api.sendResponseEmail(id, draft || undefined);
+      if (r.status === "sent") setSendResult({ ok: true, text: `Email sent to ${r.to}.` });
+      else if (r.status === "logged")
+        setSendResult({ ok: true, text: "Email logged (SMTP not configured)." });
+      else setSendResult({ ok: false, text: r.reason || "Could not send email." });
+    } catch {
+      setSendResult({ ok: false, text: "Failed to send email." });
+    } finally {
+      setAction(null);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -119,6 +151,71 @@ export default function ResponseDetailPage() {
                 <p className="text-sm leading-relaxed text-foreground">“{response.comment}”</p>
               ) : (
                 <p className="text-sm text-muted">No comment left.</p>
+              )}
+            </CardBody>
+          </Card>
+
+          {/* Send email — works for any rating */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Send an email</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={Sparkles}
+                loading={action === "draft"}
+                disabled={action !== null}
+                onClick={generate}
+              >
+                Generate with AI
+              </Button>
+            </CardHeader>
+            <CardBody>
+              {!response.customer.email ? (
+                <p className="text-sm text-muted">
+                  This respondent didn&apos;t leave an email address, so we can&apos;t email them.
+                </p>
+              ) : (
+                <>
+                  <textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    rows={8}
+                    placeholder="Write a message, or click “Generate with AI” for a draft…"
+                    className="w-full rounded-md border border-border bg-surface p-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+                  />
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={Send}
+                      loading={action === "send"}
+                      disabled={action !== null || !draft.trim()}
+                      onClick={send}
+                    >
+                      Send to {response.customer.email}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={RefreshCw}
+                      loading={action === "draft"}
+                      disabled={action !== null}
+                      onClick={generate}
+                    >
+                      Regenerate
+                    </Button>
+                  </div>
+                  {sendResult && (
+                    <p
+                      className={`mt-3 rounded-md px-3 py-2 text-sm ${
+                        sendResult.ok ? "bg-success-bg text-success" : "bg-danger-bg text-danger"
+                      }`}
+                    >
+                      {sendResult.text}
+                    </p>
+                  )}
+                </>
               )}
             </CardBody>
           </Card>

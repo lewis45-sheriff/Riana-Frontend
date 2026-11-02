@@ -79,6 +79,24 @@ export interface PaginatedResponses {
   page_count: number;
 }
 
+export interface EmailLog {
+  id: number;
+  to_email: string;
+  subject: string;
+  body: string;
+  kind: "alert" | "thankyou" | "reply" | "other";
+  status: "sent" | "logged" | "failed";
+  created_at: string;
+}
+
+export interface PaginatedEmails {
+  items: EmailLog[];
+  total: number;
+  page: number;
+  page_size: number;
+  page_count: number;
+}
+
 export interface AuthUser {
   id: number;
   username: string;
@@ -153,6 +171,22 @@ export const api = {
   },
 
   getResponse: (id: number) => request<FeedbackResponse>(`/feedback/${id}`),
+
+  draftResponseEmail: (id: number) =>
+    request<{ draft: string; degraded: boolean }>(`/feedback/${id}/draft`, {
+      method: "POST",
+    }),
+
+  sendResponseEmail: (id: number, message?: string) =>
+    request<{ status: string; to?: string; reason?: string }>(
+      `/feedback/${id}/send-email`,
+      { method: "POST", body: JSON.stringify({ message }) },
+    ),
+
+  pageEmails: (page = 1, pageSize = 10) =>
+    request<PaginatedEmails>(`/emails?page=${page}&page_size=${pageSize}`),
+
+  getEmail: (id: number) => request<EmailLog>(`/emails/${id}`),
 
   listAlerts: (status?: string) =>
     request<Alert[]>(`/alerts${status ? `?status=${status}` : ""}`),

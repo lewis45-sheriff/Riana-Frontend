@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   LayoutDashboard,
   type LucideIcon,
+  Mail,
   MessageSquare,
   PanelLeftClose,
   PanelLeftOpen,
@@ -23,6 +24,7 @@ const NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "Alerts", href: "/dashboard/alerts", icon: AlertTriangle },
   { label: "Responses", href: "/dashboard/responses", icon: MessageSquare },
+  { label: "Emails", href: "/dashboard/emails", icon: Mail },
   { label: "Ask AI", href: "/dashboard/ask", icon: Sparkles },
 ];
 
