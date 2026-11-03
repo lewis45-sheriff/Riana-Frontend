@@ -147,6 +147,12 @@ export interface SubmitFeedbackInput {
 }
 
 export const api = {
+  smsGatewayStatus: () => request<{
+    provider: string;
+    credentials_configured: boolean;
+    webhook_configured: boolean;
+    device_configured: boolean;
+  }>("/sms/gateway/status"),
   inviteSms: (phone: string, name?: string) =>
     request<{ ok: boolean; result: { status: string; error?: string; provider?: { SMSMessageData?: { Recipients?: { statusCode: number; status: string }[] } } } }>("/sms/invite", {
       method: "POST",

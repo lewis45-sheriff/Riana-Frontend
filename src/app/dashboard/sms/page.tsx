@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Send } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -12,6 +12,12 @@ export default function SmsPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [sending, setSending] = useState(false);
+  const [gateway, setGateway] = useState<Awaited<ReturnType<typeof api.smsGatewayStatus>> | null>(null);
+  useEffect(() => {
+    let active = true;
+    api.smsGatewayStatus().then((status) => { if (active) setGateway(status); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
   const busy = useRef(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -32,7 +38,9 @@ export default function SmsPage() {
       const recipients = delivery.provider?.SMSMessageData?.Recipients;
       if (delivery.status === "mock") {
         setResult({ ok: true, text: `Test invitation recorded for ${normalized}. SMS is in mock mode; no message was sent to the phone.` });
-      } else if (response.ok && delivery.status === "sent" && recipients?.length && recipients.every((r) => r.statusCode === 101)) {
+      } else if (response.ok && delivery.status === "queued") {
+        setResult({ ok: true, text: `Invitation queued for the Android gateway. Keep the phone online; check its outgoing SMS queue to confirm sending. Customers reply to the SIM number with three ratings.` });
+      } else if (response.ok && ["sent", "accepted"].includes(delivery.status) && recipients?.length && recipients.every((r) => [100, 101, 102].includes(r.statusCode))) {
         setResult({ ok: true, text: `Invitation accepted by the SMS provider for ${normalized}. This does not confirm delivery to the phone.` });
       } else {
         setResult({ ok: false, text: delivery.error || recipients?.find((r) => r.statusCode !== 101)?.status || "The provider did not confirm acceptance. Check the recipient and SMS configuration before trying again." });
@@ -48,6 +56,16 @@ export default function SmsPage() {
   return (
     <div className="mx-auto w-full max-w-5xl">
       <p className="mb-6 text-sm text-text-secondary">Invite a customer to rate your services by SMS. Their reply appears alongside web feedback.</p>
+      {gateway && (
+        <div className="mb-6 rounded-lg border border-border bg-surface p-4 text-sm text-text-secondary">
+          <p className="font-medium text-foreground">Sending through {gateway.provider === "smsgate" ? "Android SIM gateway" : "Africa’s Talking"}</p>
+          <p className="mt-1">{gateway.provider === "smsgate"
+            ? gateway.credentials_configured && gateway.webhook_configured
+              ? "Gateway credentials and reply verification are configured. Keep the Android phone connected to the internet with its SMS service running."
+              : "Android gateway setup is incomplete. Configure its credentials and webhook signing key before sending."
+            : "To receive replies without a shortcode, connect a dedicated Android SIM gateway."}</p>
+        </div>
+      )}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>Send a survey invitation</CardTitle></CardHeader>
