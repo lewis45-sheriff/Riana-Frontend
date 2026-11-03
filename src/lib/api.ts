@@ -1,10 +1,10 @@
 /**
  * Thin typed API client for the Django backend.
- * Base URL comes from NEXT_PUBLIC_API_URL (default http://localhost:8000).
+ * An empty NEXT_PUBLIC_API_URL uses the current origin for portable releases.
  */
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:8000";
 
 export interface Customer {
   id: number;
