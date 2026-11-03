@@ -147,6 +147,12 @@ export interface SubmitFeedbackInput {
 }
 
 export const api = {
+  inviteSms: (phone: string, name?: string) =>
+    request<{ ok: boolean; result: { status: string; error?: string; provider?: { SMSMessageData?: { Recipients?: { statusCode: number; status: string }[] } } } }>("/sms/invite", {
+      method: "POST",
+      body: JSON.stringify({ phone, ...(name ? { name } : {}) }),
+    }),
+
   submitFeedback: (input: SubmitFeedbackInput) =>
     request<FeedbackResult>("/feedback", {
       method: "POST",

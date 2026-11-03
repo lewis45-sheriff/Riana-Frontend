@@ -11,6 +11,7 @@ const TITLES: Record<string, string> = {
   "/dashboard/alerts": "Detractor alerts",
   "/dashboard/responses": "Responses",
   "/dashboard/emails": "Sent emails",
+  "/dashboard/sms": "SMS surveys",
   "/dashboard/ask": "Ask the dashboard",
 };
 

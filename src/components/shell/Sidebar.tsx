@@ -9,6 +9,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Sparkles,
+  Send,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +26,7 @@ const NAV: NavItem[] = [
   { label: "Alerts", href: "/dashboard/alerts", icon: AlertTriangle },
   { label: "Responses", href: "/dashboard/responses", icon: MessageSquare },
   { label: "Emails", href: "/dashboard/emails", icon: Mail },
+  { label: "SMS surveys", href: "/dashboard/sms", icon: Send },
   { label: "Ask AI", href: "/dashboard/ask", icon: Sparkles },
 ];
 
