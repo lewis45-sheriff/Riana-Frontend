@@ -121,16 +121,22 @@ export default function AlertDetailPage() {
     setSendResult(null);
     try {
       const r = await api.sendAlertSms(id, draft);
-      if (r.status === "sent" || r.status === "mock") {
+      const successMessage: Record<string, string> = {
+        mock: `SMS logged in mock mode (would text ${r.to}).`,
+        queued: `SMS queued in the Android gateway for ${r.to}. Check the phone's outgoing queue to confirm delivery.`,
+        accepted: `SMS accepted by the provider for ${r.to}. Provider acceptance does not confirm delivery.`,
+        sent: `SMS sent to ${r.to}.`,
+      };
+      if (successMessage[r.status]) {
         setSendResult({
           ok: true,
-          text:
-            r.status === "mock"
-              ? `SMS queued in mock mode (would text ${r.to}).`
-              : `SMS sent to ${r.to}.`,
+          text: successMessage[r.status],
         });
       } else {
-        setSendResult({ ok: false, text: r.reason || "Could not send SMS." });
+        setSendResult({
+          ok: false,
+          text: r.reason || r.provider?.error || "Could not send SMS.",
+        });
       }
       await load();
     } catch {

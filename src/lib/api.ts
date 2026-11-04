@@ -223,7 +223,12 @@ export const api = {
     ),
 
   sendAlertSms: (id: number, message?: string) =>
-    request<{ status: string; to?: string; reason?: string }>(
+    request<{
+      status: string;
+      to?: string;
+      reason?: string;
+      provider?: { status?: string; error?: string };
+    }>(
       `/alerts/${id}/send-sms`,
       { method: "POST", body: JSON.stringify({ message }) },
     ),
