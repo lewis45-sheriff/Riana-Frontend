@@ -2,7 +2,6 @@
 
 import {
   AlertTriangle,
-  Code2,
   LayoutDashboard,
   type LucideIcon,
   Mail,
@@ -15,7 +14,6 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BASE_URL } from "@/lib/api";
 
 interface NavItem {
   label: string;
@@ -24,7 +22,6 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { label: "Swagger API", href: `${BASE_URL}/api/docs/`, icon: Code2 },
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { label: "Alerts", href: "/dashboard/alerts", icon: AlertTriangle },
   { label: "Responses", href: "/dashboard/responses", icon: MessageSquare },
